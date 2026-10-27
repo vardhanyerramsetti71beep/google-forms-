@@ -1,5 +1,12 @@
 # Google Form with Flask & MySQL (No Manual SQL Commands)
 
+[![Launch Live App](https://img.shields.io/badge/Launch%20Live%20App-Vercel-black?style=for-the-badge&logo=vercel)](https://flask-google-form.vercel.app/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/vardhanyerramsetti71beep/google-forms-)
+[![Portfolio](https://img.shields.io/badge/Developer%20Portfolio-Vardhan%20Yerramsetti-emerald?style=for-the-badge)](https://my-portfolio-vardhan-yerramsetti.vercel.app/)
+
+> 🚀 **Live Production Deployment**: [https://flask-google-form.vercel.app/](https://flask-google-form.vercel.app/)  
+> 📊 **Live Database Responses**: [https://flask-google-form.vercel.app/responses](https://flask-google-form.vercel.app/responses)
+
 A Google Forms replica built with **Flask**, **MySQL**, and **Flask-SQLAlchemy ORM**.
 
 This project creates the MySQL database and table schema **entirely from Python inside the project folder**—without running manual SQL commands (`CREATE DATABASE`, `CREATE TABLE`, `INSERT INTO`, `SELECT`).
