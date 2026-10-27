@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Response Recorded - Google Forms</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <header class="top-nav">
+        <a href="/" class="nav-brand">
+            <span class="icon">G</span>
+            <span>Google Forms Clone</span>
+        </a>
+        <a href="/responses" class="nav-link">📊 View SQL Responses</a>
+    </header>
+
+    <main class="form-container">
+        <div class="card success-card">
+            <h1>Google Form Registration & Feedback</h1>
+            <p style="margin-top: 14px; color: var(--text-primary); font-size: 15px;">
+                Your response has been recorded and safely stored in the SQL database.
+            </p>
+
+            <div class="success-links">
+                <a href="/">Submit another response</a>
+                <a href="/responses">View stored data in SQL database &rarr;</a>
+            </div>
+        </div>
+
+        <footer class="footer-text">
+            <p>Google Forms Clone built with Flask & SQLite</p>
+        </footer>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySQL Database Responses - Google Forms</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Expand width for the responses data table */
+        .form-container {
+            max-width: 1000px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-nav" style="max-width: 1000px;">
+        <a href="/" class="nav-brand">
+            <span class="icon">G</span>
+            <span>Google Forms Clone</span>
+        </a>
+        <a href="/" class="nav-link">&larr; Back to Form</a>
+    </header>
+
+    <main class="form-container">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card header-card">
+            <div class="responses-header">
+                <div>
+                    <h1>Recorded Form Responses</h1>
+                    <p class="description">Live data retrieved from the MySQL database (<code>google_form_db</code>).</p>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <span class="stats-badge">{{ total }} Responses</span>
+                    {% if total > 0 %}
+                    <a href="/export-csv" class="btn-export">⬇ Export to CSV</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if responses %}
+            <div class="table-responsive">
+                <table class="responses-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Gender</th>
+                            <th>Topics</th>
+                            <th>Experience</th>
+                            <th>Rating</th>
+                            <th>Feedback</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in responses %}
+                        <tr>
+                            <td><strong>#{{ row.id }}</strong></td>
+                            <td>{{ row.full_name }}</td>
+                            <td><a href="mailto:{{ row.email }}" style="color: var(--primary-purple);">{{ row.email }}</a></td>
+                            <td>{{ row.gender }}</td>
+                            <td>{{ row.topics }}</td>
+                            <td>{{ row.experience_level }}</td>
+                            <td>
+                                <span class="rating-badge">★ {{ row.rating }}/5</span>
+                            </td>
+                            <td>{{ row.feedback }}</td>
+                            <td style="color: var(--text-secondary); white-space: nowrap;">
+                                {{ row.submitted_at.strftime('%Y-%m-%d %H:%M:%S') if row.submitted_at else '' }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p style="font-size: 16px; margin-bottom: 8px;">No responses yet!</p>
+                <p style="font-size: 14px; margin-bottom: 16px;">Fill out the form to see your data populate this MySQL table in real time.</p>
+                <a href="/" class="btn-submit" style="display: inline-block; text-decoration: none;">Go to Form</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <footer class="footer-text">
+            <p>MySQL Database: <code>google_form_db</code> &bull; Table: <code>form_responses</code></p>
+        </footer>
+    </main>
+
+</body>
+</html>

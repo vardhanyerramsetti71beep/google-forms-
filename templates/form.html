@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Form - Feedback & Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+        <a href="/" class="nav-brand">
+            <span class="icon">G</span>
+            <span>Google Forms Clone</span>
+        </a>
+        <a href="/responses" class="nav-link">📊 View SQL Responses</a>
+    </header>
+
+    <main class="form-container">
+        <!-- Flash messages for validation errors -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="/submit" method="POST" id="googleForm">
+
+            <!-- Form Header Card -->
+            <div class="card header-card">
+                <h1>Google Form Registration & Feedback</h1>
+                <p class="description">
+                    This is a Google Form built with Flask as the backend and standard SQL as the database.
+                    Fill in your details below to record your response.
+                </p>
+                <hr class="divider">
+                <p class="required-notice">* Indicates required question</p>
+            </div>
+
+            <!-- Question 1: Full Name -->
+            <div class="card">
+                <div class="question-title">
+                    <label for="full_name">Full Name</label>
+                    <span class="required-star">*</span>
+                </div>
+                <div class="question-subtitle">Enter your first and last name</div>
+                <input 
+                    type="text" 
+                    id="full_name" 
+                    name="full_name" 
+                    class="text-input" 
+                    placeholder="Your answer" 
+                    required
+                >
+            </div>
+
+            <!-- Question 2: Email -->
+            <div class="card">
+                <div class="question-title">
+                    <label for="email">Email Address</label>
+                    <span class="required-star">*</span>
+                </div>
+                <div class="question-subtitle">We will use this to confirm your submission</div>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="text-input" 
+                    placeholder="Your email address" 
+                    required
+                >
+            </div>
+
+            <!-- Question 3: Gender (Radio buttons) -->
+            <div class="card">
+                <div class="question-title">
+                    <span>Gender</span>
+                    <span class="required-star">*</span>
+                </div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="radio" name="gender" value="Female" required>
+                        <span>Female</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="gender" value="Male" required>
+                        <span>Male</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="gender" value="Non-binary / Other" required>
+                        <span>Non-binary / Other</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="gender" value="Prefer not to say" required>
+                        <span>Prefer not to say</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Question 4: Technical Interests (Checkboxes) -->
+            <div class="card">
+                <div class="question-title">
+                    <span>Areas of Interest</span>
+                </div>
+                <div class="question-subtitle">Select all that apply</div>
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="checkbox" name="topics" value="Python & Flask">
+                        <span>Python & Flask</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="topics" value="SQL & Databases">
+                        <span>SQL & Databases</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="topics" value="Frontend (HTML/CSS/JS)">
+                        <span>Frontend (HTML/CSS/JS)</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="topics" value="Data Science & ML">
+                        <span>Data Science & ML</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="topics" value="Cloud Deployment">
+                        <span>Cloud Deployment</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Question 5: Experience Level (Dropdown) -->
+            <div class="card">
+                <div class="question-title">
+                    <label for="experience_level">Experience Level</label>
+                    <span class="required-star">*</span>
+                </div>
+                <div class="question-subtitle">Select your current level of programming experience</div>
+                <select name="experience_level" id="experience_level" class="select-input" required>
+                    <option value="" disabled selected>Choose</option>
+                    <option value="Beginner (0-1 years)">Beginner (0-1 years)</option>
+                    <option value="Intermediate (1-3 years)">Intermediate (1-3 years)</option>
+                    <option value="Advanced (3+ years)">Advanced (3+ years)</option>
+                </select>
+            </div>
+
+            <!-- Question 6: Rating Scale (Linear Scale 1-5) -->
+            <div class="card">
+                <div class="question-title">
+                    <span>How would you rate this form?</span>
+                    <span class="required-star">*</span>
+                </div>
+                <div class="scale-container">
+                    <span class="scale-label">Poor</span>
+                    <div class="scale-points">
+                        <label class="scale-point">
+                            <span>1</span>
+                            <input type="radio" name="rating" value="1" required>
+                        </label>
+                        <label class="scale-point">
+                            <span>2</span>
+                            <input type="radio" name="rating" value="2">
+                        </label>
+                        <label class="scale-point">
+                            <span>3</span>
+                            <input type="radio" name="rating" value="3">
+                        </label>
+                        <label class="scale-point">
+                            <span>4</span>
+                            <input type="radio" name="rating" value="4">
+                        </label>
+                        <label class="scale-point">
+                            <span>5</span>
+                            <input type="radio" name="rating" value="5" checked>
+                        </label>
+                    </div>
+                    <span class="scale-label">Excellent</span>
+                </div>
+            </div>
+
+            <!-- Question 7: Comments / Feedback (Textarea) -->
+            <div class="card">
+                <div class="question-title">
+                    <label for="feedback">Additional Comments or Feedback</label>
+                </div>
+                <div class="question-subtitle">Any suggestions or feedback you would like to share</div>
+                <textarea 
+                    id="feedback" 
+                    name="feedback" 
+                    class="textarea-input" 
+                    placeholder="Your answer"
+                ></textarea>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">Submit</button>
+                <button type="reset" class="btn-clear">Clear form</button>
+            </div>
+
+            <!-- Footer -->
+            <footer class="footer-text">
+                <p>Never submit passwords through Google Forms.</p>
+                <p style="margin-top: 6px;">Powered by Flask & SQLite</p>
+            </footer>
+
+        </form>
+    </main>
+
+</body>
+</html>
