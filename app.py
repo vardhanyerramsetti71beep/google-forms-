@@ -2,53 +2,75 @@ import csv
 import io
 import os
 import pymysql
-from flask import Flask, render_template, request, redirect, url_for, flash, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, Response, send_from_directory
 
 from config import (
     SQLALCHEMY_DATABASE_URI, SECRET_KEY,
-    MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB
+    MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB,
+    IS_VERCEL, DB_TYPE
 )
 from models import db, FormResponse
 
-# Initialize Flask App
-app = Flask(__name__)
+# Initialize Flask App with absolute paths for serverless compatibility
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static")
+)
 app.secret_key = SECRET_KEY
 
-# Configure SQLAlchemy with MySQL URI
+# Configure SQLAlchemy with target database URI
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Bind SQLAlchemy to Flask App
 db.init_app(app)
 
-def auto_init_mysql():
+def auto_init_database():
     """
-    Creates the MySQL database and tables from Python without typing SQL commands.
-    Runs automatically when starting the Flask app.
+    Creates the database and tables from Python without manual SQL commands.
+    Automatically handles local MySQL, cloud databases, and serverless SQLite.
     """
     try:
-        # Step 1: Connect to MySQL server and ensure database exists
-        conn = pymysql.connect(
-            host=MYSQL_HOST,
-            user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            port=int(MYSQL_PORT)
-        )
-        with conn.cursor() as cursor:
-            cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{MYSQL_DB}`")
-        conn.commit()
-        conn.close()
+        # Step 1: If MySQL is targeted and not in serverless localhost fallback, ensure database exists
+        if SQLALCHEMY_DATABASE_URI.startswith("mysql") and not (IS_VERCEL and MYSQL_HOST in ("localhost", "127.0.0.1")):
+            conn = pymysql.connect(
+                host=MYSQL_HOST,
+                user=MYSQL_USER,
+                password=MYSQL_PASSWORD,
+                port=int(MYSQL_PORT)
+            )
+            with conn.cursor() as cursor:
+                cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{MYSQL_DB}`")
+            conn.commit()
+            conn.close()
 
         # Step 2: Use Flask-SQLAlchemy ORM to generate all tables (no SQL needed!)
         with app.app_context():
             db.create_all()
-            print("✔ MySQL Database & Tables are verified and ready.")
+            print(f"[OK] Database ({DB_TYPE}) & Tables are verified and ready.")
     except Exception as err:
-        print(f"\n[Note] Could not automatically initialize MySQL: {err}")
-        print("Please set your MySQL password in '.env' or run: python create_db.py\n")
+        print(f"\n[Note] Database initialization notice: {err}")
+        print("Please verify connection settings in '.env' or environment variables.\n")
 
-# Run auto initialization
-auto_init_mysql()
+# Run auto initialization at startup
+auto_init_database()
+
+@app.before_request
+def ensure_tables_exist():
+    """Ensures tables are present on fresh serverless worker invocations."""
+    if not getattr(app, "_tables_created", False):
+        try:
+            db.create_all()
+            app._tables_created = True
+        except Exception:
+            pass
+
+@app.route("/static/<path:filename>")
+def serve_static(filename):
+    """Fallback static asset router for serverless platforms."""
+    return send_from_directory(os.path.join(BASE_DIR, "static"), filename)
 
 @app.route("/")
 def index():
@@ -57,7 +79,7 @@ def index():
 
 @app.route("/submit", methods=["POST"])
 def submit_form():
-    """Handles form submission and saves data into MySQL using SQLAlchemy ORM (no SQL commands)."""
+    """Handles form submission and saves data into database using SQLAlchemy ORM (no SQL commands)."""
     full_name = request.form.get("full_name", "").strip()
     email = request.form.get("email", "").strip()
     gender = request.form.get("gender", "").strip()
@@ -92,7 +114,7 @@ def submit_form():
             feedback=feedback or "N/A"
         )
         
-        # Persist to MySQL via ORM session
+        # Persist to database via ORM session
         db.session.add(new_entry)
         db.session.commit()
         
@@ -110,18 +132,18 @@ def success():
 
 @app.route("/responses")
 def view_responses():
-    """Displays all responses stored in MySQL using ORM query (no manual SQL SELECT query)."""
+    """Displays all responses stored in database using ORM query (no manual SQL SELECT query)."""
     try:
         # Query through ORM - No raw SQL SELECT query!
         responses = FormResponse.query.order_by(FormResponse.submitted_at.desc()).all()
         return render_template("responses.html", responses=responses, total=len(responses))
     except Exception as err:
-        flash(f"Could not load responses from MySQL: {str(err)}", "error")
+        flash(f"Could not load responses: {str(err)}", "error")
         return render_template("responses.html", responses=[], total=0)
 
 @app.route("/export-csv")
 def export_csv():
-    """Exports all stored MySQL responses into a downloadable CSV file."""
+    """Exports all stored responses into a downloadable CSV file."""
     try:
         responses = FormResponse.query.order_by(FormResponse.submitted_at.desc()).all()
         output = io.StringIO()
@@ -153,5 +175,5 @@ def export_csv():
 if __name__ == "__main__":
     print("Starting Flask Google Form server...")
     print("Google Form: http://127.0.0.1:5000")
-    print("MySQL Responses: http://127.0.0.1:5000/responses")
+    print("Responses: http://127.0.0.1:5000/responses")
     app.run(debug=True, port=5000)
